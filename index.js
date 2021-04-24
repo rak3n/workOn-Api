@@ -38,6 +38,11 @@ app.post("/addJobs", (req, res) => {
       return res.json({ succes: false, message: "parameters missing" });
     }
 
+    let phoneRegex = /^\d{13}$/;
+    if (req.body.phoneNumber.length != 13 && !phoneRegex.test(phoneRegex)) {
+      return res.json({ succes: false, message: "phoneNumber invalid" });
+    }
+
     let obj = {
       name: req.body.name,
       description: req.body.description || "",
