@@ -23,11 +23,17 @@ app.get("/", (req, res) => {
 app.post("/addJobs", (req, res) => {
   console.log(req.body);
   try {
-    console.log(!req.body.name || !req.body.latitude || !req.body.longitude);
+    // console.log(
+    //   !req.body.name ||
+    //     !req.body.latitude ||
+    //     !req.body.longitude ||
+    //     !req.body.phoneNumber
+    // );
     if (
       !req.body.name ||
       !String(req.body.latitude) ||
-      !String(req.body.longitude)
+      !String(req.body.longitude) ||
+      !req.body.phoneNumber
     ) {
       return res.json({ succes: false, message: "parameters missing" });
     }
@@ -35,6 +41,7 @@ app.post("/addJobs", (req, res) => {
     let obj = {
       name: req.body.name,
       description: req.body.description || "",
+      phoneNumber: req.body.phoneNumber,
       latitude: req.body.latitude,
       longitude: req.body.longitude,
       services: req.body.services || [],
