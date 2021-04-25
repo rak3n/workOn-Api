@@ -17,11 +17,10 @@ app.use(cors());
 var port = process.env.PORT || 7575;
 // Welcome message
 app.get("/", (req, res) => {
-  res.send("Welcome to Express");
+  return res.send("Welcome to Express");
 });
 
 app.post("/addJobs", (req, res) => {
-  console.log(req.body);
   try {
     // console.log(
     //   !req.body.name ||
@@ -37,40 +36,51 @@ app.post("/addJobs", (req, res) => {
       typeof req.body.fees != "number" ||
       !req.body.services
     ) {
-      return res.json({ succes: false, message: "parameters missing" });
+      return res
+        .status(400)
+        .json({ succes: false, message: "parameters missing" });
     }
 
     let phoneRegex = /^\d{13}$/;
     if (req.body.phoneNumber.length != 13 && !phoneRegex.test(phoneRegex)) {
-      return res.json({ succes: false, message: "phoneNumber invalid" });
+      return res
+        .status(400)
+        .json({ succes: false, message: "phoneNumber invalid" });
     }
+
+    console.log(req.body);
+    const lat = req.body.latitude;
+    const lon = req.body.longitude;
 
     let obj = {
       name: req.body.name,
       fees: req.body.fees || "",
       phoneNumber: req.body.phoneNumber,
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
       services: req.body.services || "",
       imageUrl: req.body.imageUrl || "",
+      location: {
+        type: "Point",
+        coordinates: [lon, lat],
+      },
     };
+
+    console.log(obj);
     let model = new Model(obj);
     model.save((err) => {
       if (err) {
-        res.json({
+        return res.status(400).json({
           succes: false,
           message: "unable to save data",
+          err: err,
         });
-
-        return 0;
       }
+      return res.status(200).json({ succes: true, message: "added Job" });
     });
-    res.json({ succes: true, message: "added Job" });
-    return 1;
   } catch {
     (err) => {
-      res.json({ succes: false, message: "Error in querry" });
-      return 0;
+      return res
+        .status(400)
+        .json({ succes: false, message: "Error in querry" });
     };
   }
 });
@@ -81,35 +91,52 @@ const sortByLoc = (a, b) => {
 };
 
 app.post("/getJobs", (req, res) => {
-  Model.find({}, (err, result) => {
-    if (err) {
-      res.json({ succes: false, message: "retrival failed" });
-    } else {
-      if (req.body.longitude && req.body.latitude) {
-        var check = {
-          latitude: req.body.latitude,
-          longitude: req.body.longitude,
-        };
-        result.sort((a, b) => {
-          return sortByLoc(a, check) - sortByLoc(b, check);
-        });
+  if (req.body.longitude && req.body.latitude) {
+    var maxDist = req.body.maxDist || 5000;
+    Model.aggregate(
+      [
+        {$geoNear: {
+          near: {
+            type: "Point",
+            coordinates: [req.body.longitude, req.body.latitude],
+          },
+          distanceField: "dist.calculated",
+          maxDistance: maxDist,
+          spherical: true,
+        }},
+      ],
+      (err, data) => {
+        if (err) {
+          return res
+            .status(400)
+            .json({ succes: false, message: "an error occured", err:err });
+        }
+        return res.json(data);
       }
-      let obj = [];
-      for (let i = 0; i < result.length; i++) {
-        obj = [...obj, result[i]];
+    );
+  }
+  else{
+    Model.find({}, (err, result) => {
+      if (err) {
+        return res.json({ succes: false, message: "retrival failed" });
+      } else {
+        let obj = [];
+        for (let i = 0; i < result.length; i++) {
+          obj = [...obj, result[i]];
+        }
+        res.json(obj);
       }
-      return res.json(obj);
-    }
-  });
+    });
+  }
 });
 
 app.delete("/deleteAllJobs", (req, res) => {
   if (req.body.APIkey === "deleteEveryThing") {
     Model.deleteMany({}, () => {
-      return res.json({ succes: true, message: "All Data Deleted." });
+      res.json({ succes: true, message: "All Data Deleted." });
     });
   } else {
-    return res.json({ succes: false, message: "API Key missing" });
+    res.json({ succes: false, message: "API Key missing" });
   }
 });
 
