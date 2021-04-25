@@ -15,8 +15,8 @@ mongo.then(
 
 var schema = mdb.Schema({
   name: String,
-  description: String,
-  services: Array,
+  fees: Number,
+  services: String,
   phoneNumber: String,
   latitude: Number,
   longitude: Number,

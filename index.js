@@ -33,7 +33,9 @@ app.post("/addJobs", (req, res) => {
       !req.body.name ||
       !String(req.body.latitude) ||
       !String(req.body.longitude) ||
-      !req.body.phoneNumber
+      !req.body.phoneNumber ||
+      !String(req.body.fees) ||
+      !String(req.body.services)
     ) {
       return res.json({ succes: false, message: "parameters missing" });
     }
@@ -45,11 +47,11 @@ app.post("/addJobs", (req, res) => {
 
     let obj = {
       name: req.body.name,
-      description: req.body.description || "",
+      fees: req.body.fees || "",
       phoneNumber: req.body.phoneNumber,
       latitude: req.body.latitude,
       longitude: req.body.longitude,
-      services: req.body.services || [],
+      services: req.body.services || "",
     };
     let model = new Model(obj);
     model.save((err) => {
