@@ -20,6 +20,7 @@ var schema = mdb.Schema({
   phoneNumber: String,
   latitude: Number,
   longitude: Number,
+  imageUrl: String,
 });
 
 var Model = mdb.model("model", schema, "availableJobs");

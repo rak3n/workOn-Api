@@ -31,11 +31,11 @@ app.post("/addJobs", (req, res) => {
     // );
     if (
       !req.body.name ||
-      !String(req.body.latitude) ||
-      !String(req.body.longitude) ||
+      typeof req.body.latitude != "number" ||
+      typeof req.body.longitude != "number" ||
       !req.body.phoneNumber ||
-      !String(req.body.fees) ||
-      !String(req.body.services)
+      typeof req.body.fees != "number" ||
+      !req.body.services
     ) {
       return res.json({ succes: false, message: "parameters missing" });
     }
@@ -52,6 +52,7 @@ app.post("/addJobs", (req, res) => {
       latitude: req.body.latitude,
       longitude: req.body.longitude,
       services: req.body.services || "",
+      imageUrl: req.body.imageUrl || "",
     };
     let model = new Model(obj);
     model.save((err) => {
@@ -64,7 +65,7 @@ app.post("/addJobs", (req, res) => {
         return 0;
       }
     });
-    res.json({ succes: true, message: "added Jobs" });
+    res.json({ succes: true, message: "added Job" });
     return 1;
   } catch {
     (err) => {
@@ -74,18 +75,42 @@ app.post("/addJobs", (req, res) => {
   }
 });
 
+const sortByLoc = (a, b) => {
+  var dist = (a.latitude - b.latitude) ** 2 + (a.longitude - b.longitude);
+  return Math.sqrt(dist);
+};
+
 app.post("/getJobs", (req, res) => {
   Model.find({}, (err, result) => {
     if (err) {
       res.json({ succes: false, message: "retrival failed" });
     } else {
+      if (req.body.longitude && req.body.latitude) {
+        var check = {
+          latitude: req.body.latitude,
+          longitude: req.body.longitude,
+        };
+        result.sort((a, b) => {
+          return sortByLoc(a, check) - sortByLoc(b, check);
+        });
+      }
       let obj = [];
       for (let i = 0; i < result.length; i++) {
         obj = [...obj, result[i]];
       }
-      res.json(obj);
+      return res.json(obj);
     }
   });
+});
+
+app.delete("/deleteAllJobs", (req, res) => {
+  if (req.body.APIkey === "deleteEveryThing") {
+    Model.deleteMany({}, () => {
+      return res.json({ succes: true, message: "All Data Deleted." });
+    });
+  } else {
+    return res.json({ succes: false, message: "API Key missing" });
+  }
 });
 
 // Launch app to the specified port
