@@ -82,7 +82,7 @@ app.post("/addJobs", (req, res) => {
     (err) => {
       return res
         .status(400)
-        .json({ succes: false, message: "Error in querry" });
+        .json({ succes: false, message: "Error in query" });
     };
   }
 });
