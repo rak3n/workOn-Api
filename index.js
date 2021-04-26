@@ -1,6 +1,7 @@
 import express from "express";
 import { Model } from "./model.js";
 import bodyParser from "body-parser";
+import {jaro_winkler} from "./strcmp.js";
 import cors from "cors";
 //Start App
 let app = express();
@@ -58,6 +59,7 @@ app.post("/addJobs", (req, res) => {
       phoneNumber: req.body.phoneNumber,
       services: req.body.services || "",
       imageUrl: req.body.imageUrl || "",
+      tags:req.body.tags || [],
       location: {
         type: "Point",
         coordinates: [lon, lat],
@@ -85,10 +87,19 @@ app.post("/addJobs", (req, res) => {
   }
 });
 
-const sortByLoc = (a, b) => {
-  var dist = (a.latitude - b.latitude) ** 2 + (a.longitude - b.longitude);
-  return Math.sqrt(dist);
-};
+// const sortByLoc = (a, b) => {
+//   var dist = (a.latitude - b.latitude) ** 2 + (a.longitude - b.longitude);
+//   return Math.sqrt(dist);
+// };
+
+const checkSimilarInTags=(tags, search)=>{
+  for(let i=0;i<tags.length;i++){
+    if(jaro_winkler.distance(tags[i],search)){
+      return true;
+    }
+  }
+  return false;
+}
 
 app.post("/getJobs", (req, res) => {
   if (req.body.longitude && req.body.latitude) {
@@ -111,6 +122,19 @@ app.post("/getJobs", (req, res) => {
             .status(400)
             .json({ succes: false, message: "an error occured", err:err });
         }
+        if(req.body.searchTerm){
+          var searchTerm=req.body.searchTerm.toLowerCase();
+          var results=data.filter(itm=>{
+            //console.log(jaro_winkler.distance(itm.name.toLowerCase(),searchTerm),jaro_winkler.distance(itm.services.toLowerCase(),searchTerm))
+            if(jaro_winkler.distance(itm.name.toLowerCase(),searchTerm) >= 0.75 || jaro_winkler.distance(itm.services.toLowerCase(),searchTerm) >= 0.75){
+              return true;
+            }
+            
+            return checkSimilarInTags(itm.tags || [], searchTerm);
+          })
+          //console.log(results);
+          return res.json(results);
+        }
         return res.json(data);
       }
     );
@@ -124,7 +148,17 @@ app.post("/getJobs", (req, res) => {
         for (let i = 0; i < result.length; i++) {
           obj = [...obj, result[i]];
         }
-        res.json(obj);
+        if(req.body.searchTerm){
+          var searchTerm=req.body.searchTerm.toLowerCase();
+          var results=obj.filter(itm=>{
+            if(jaro_winkler.distance(itm.name.toLowerCase(),searchTerm) >= 0.75 || jaro_winkler.distances(itm.services.toLowerCase(),searchTerm) >= 0.75){
+              return true;
+            }
+            return false;
+          })
+          return res.json(results);
+        }
+        return res.json(obj);
       }
     });
   }

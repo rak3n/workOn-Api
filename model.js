@@ -22,6 +22,7 @@ var schema = mdb.Schema({
   fees: Number,
   services: String,
   phoneNumber: String,
+  tags: Array,
   location: {
     type: Object,
     properties: {
