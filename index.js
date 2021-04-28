@@ -29,7 +29,7 @@ app.post("/addJobs", (req, res) => {
     //     !req.body.longitude ||
     //     !req.body.phoneNumber
     // );
-    console.log(req.body);
+    console.log(req);
     if (
       !req.body.name ||
       typeof req.body.latitude != "number" ||
