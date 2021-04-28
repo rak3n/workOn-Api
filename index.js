@@ -29,7 +29,7 @@ app.post("/addJobs", (req, res) => {
     //     !req.body.longitude ||
     //     !req.body.phoneNumber
     // );
-    console.log(req);
+    //console.log(req);
     if (
       !req.body.name ||
       typeof req.body.latitude != "number" ||
@@ -43,14 +43,14 @@ app.post("/addJobs", (req, res) => {
         .json({ succes: false, message: "parameters missing" });
     }
 
-    let phoneRegex = /^\d{13}$/;
-    if (req.body.phoneNumber.length != 13 && !phoneRegex.test(phoneRegex)) {
-      return res
-        .status(400)
-        .json({ succes: false, message: "phoneNumber invalid" });
-    }
+    // let phoneRegex = /^\d{13}$/;
+    // if (req.body.phoneNumber.length != 13 && !phoneRegex.test(phoneRegex)) {
+    //   return res
+    //     .status(400)
+    //     .json({ succes: false, message: "phoneNumber invalid" });
+    // }
+    //console.log(req.body);
 
-    console.log(req.body);
     const lat = req.body.latitude;
     const lon = req.body.longitude;
 
