@@ -102,6 +102,25 @@ const checkSimilarInTags=(tags, search)=>{
   return false;
 }
 
+const beautify=(arr)=>{
+  let res=arr.map(itm=>{
+    return{
+      id: itm._id,
+      name: itm.name,
+      fees: itm.fees,
+      phoneNumber: itm.phoneNumber,
+      tags: itm.tags,
+      imageUrl: itm.imageUrl,
+      location:{
+        latitude: itm.location.coordinates[1],
+        longitude:itm.location.coordinates[0]
+      }
+    }
+  })
+  //console.log(res);
+  return res;
+}
+
 app.post("/getJobs", (req, res) => {
   if (req.body.longitude && req.body.latitude) {
     var maxDist = req.body.maxDist || 5000;
@@ -134,8 +153,10 @@ app.post("/getJobs", (req, res) => {
             return checkSimilarInTags(itm.tags || [], searchTerm);
           })
           //console.log(results);
+          results=beautify(results);
           return res.json(results);
         }
+        data=beautify(data);
         return res.json(data);
       }
     );
@@ -157,8 +178,11 @@ app.post("/getJobs", (req, res) => {
             }
             return false;
           })
+          results=beautify(results);
           return res.json(results);
         }
+        console.log(obj);
+        obj=beautify(obj);
         return res.json(obj);
       }
     });
