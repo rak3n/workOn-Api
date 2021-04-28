@@ -152,7 +152,7 @@ app.post("/getJobs", (req, res) => {
         if(req.body.searchTerm){
           var searchTerm=req.body.searchTerm.toLowerCase();
           var results=obj.filter(itm=>{
-            if(jaro_winkler.distance(itm.name.toLowerCase(),searchTerm) >= 0.75 || jaro_winkler.distances(itm.services.toLowerCase(),searchTerm) >= 0.75){
+            if(jaro_winkler.distance(itm.name.toLowerCase(),searchTerm) >= 0.75 || jaro_winkler.distance(itm.services.toLowerCase(),searchTerm) >= 0.75){
               return true;
             }
             return false;
