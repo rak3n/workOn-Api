@@ -111,6 +111,7 @@ const beautify=(arr)=>{
       phoneNumber: itm.phoneNumber,
       tags: itm.tags,
       imageUrl: itm.imageUrl,
+      services: itm.services,
       location:{
         latitude: itm.location.coordinates[1],
         longitude:itm.location.coordinates[0]
